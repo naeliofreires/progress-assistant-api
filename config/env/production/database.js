@@ -12,22 +12,28 @@
 //   },
 // });
 
-const parse = require("pg-connection-string").parse;
-const config = parse(process.env.DATABASE_URL);
-
-console.log(JSON.stringify(config, null, 4));
+const { parse } = require("pg-connection-string");
 
 module.exports = ({ env }) => {
+  const { host, port, database, user, password } = parse(env("DATABASE_URL"));
+
   return {
-    connection: {
-      client: "postgres",
-      connection: {
-        host: config.host,
-        port: config.port,
-        database: config.database,
-        user: config.user,
-        password: config.password,
-        ssl: env.bool("DATABASE_SSL", false),
+    defaultConnection: "default",
+    connections: {
+      default: {
+        connector: "bookshelf",
+        settings: {
+          client: "postgres",
+          host,
+          port,
+          database,
+          username: user,
+          password,
+          ssl: { rejectUnauthorized: false },
+        },
+        options: {
+          ssl: false,
+        },
       },
     },
   };
